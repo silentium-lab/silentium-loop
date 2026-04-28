@@ -1,0 +1,63 @@
+{
+  "name": "silentium-loop",
+  "version": "0.0.1",
+  "description": "Silentium commands and messages",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/silentium-loop.js",
+  "module": "dist/silentium-loop.mjs",
+  "typings": "dist/silentium-loop.d.ts",
+  "keywords": [
+    "oop",
+    "fp"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "lint": "eslint src",
+    "lint-fix": "eslint src --fix",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "cz": "git cz",
+    "push-head": "git push origin HEAD",
+    "release": "npm run build && git add . && (git commit -m 'build: before release' || echo 'commit failed') && standard-version --no-verify && git push --follow-tags && npm publish",
+    "poor-release": "standard-version --no-verify",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silentium-lab/silentium-loop.git"
+  },
+  "private": false,
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.12.0",
+    "@getify/eslint-plugin-proper-arrows": "^11.0.3",
+    "@rollup/plugin-alias": "^6.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@typescript-eslint/eslint-plugin": "^8.8.1",
+    "@typescript-eslint/parser": "^8.8.1",
+    "cz-customizable": "^5.5.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.12.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "expect-type": "^1.2.2",
+    "husky": "^9.1.7",
+    "jest-leak-detector": "^30.0.0",
+    "prettier": "3.3.3",
+    "rollup": "^4.24.0",
+    "rollup-plugin-dts": "^6.1.1",
+    "rollup-plugin-esbuild": "^6.1.1",
+    "standard-version": "^9.5.0",
+    "vitest": "^3.0.6"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": "./commitizen.cjs"
+    }
+  }
+}
