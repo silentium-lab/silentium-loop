@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/silentium-lab/silentium-loop/compare/v0.0.4...v0.0.5) (2026-04-29)
+
+
+### Bug Fixes
+
+* **master:** dispatch refactoring ([78c8cf5](https://github.com/silentium-lab/silentium-loop/commit/78c8cf5b03bde653afdd30574513ca8bfde55f28))
+
 ### [0.0.4](https://github.com/silentium-lab/silentium-loop/compare/v0.0.3...v0.0.4) (2026-04-29)
 
 
