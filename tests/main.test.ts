@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, TestContext, vi } from "vitest";
-import { Action, Command } from "../src";
+import { Actions, Command } from "../src";
 
 declare module "vitest" {
   export interface TestContext {
@@ -22,7 +22,7 @@ describe("Use Cases", () => {
 
   test("main", async ({ store }) => {
     const startAction = vi.fn();
-    const dispatch = Action(store.dispatch, [["start", startAction]]);
+    const dispatch = Actions(store.dispatch, [["start", startAction]]);
     await dispatch((state: any) => {
       return Command(state, {
         type: "start",
@@ -33,7 +33,7 @@ describe("Use Cases", () => {
 
   test("arguments transfer", async ({ store }) => {
     const fetchAction = vi.fn();
-    const dispatch = Action(store.dispatch, [["fetch", fetchAction]]);
+    const dispatch = Actions(store.dispatch, [["fetch", fetchAction]]);
     await dispatch((state: any) => {
       return Command(state, {
         type: "fetch",
@@ -51,7 +51,7 @@ describe("Use Cases", () => {
   });
 
   test("computing", async ({ store }) => {
-    const dispatch = Action(store.dispatch, []);
+    const dispatch = Actions(store.dispatch, []);
     const state: any = await dispatch((state: any) => {
       state.c = state.a + state.b;
       return state;
@@ -61,7 +61,7 @@ describe("Use Cases", () => {
 
   test("unhandled types", async ({ store }) => {
     const warn = vi.fn();
-    const dispatch = Action(store.dispatch, [], warn);
+    const dispatch = Actions(store.dispatch, [], warn);
     await dispatch((state: any) => {
       return Command(state, {
         type: "fetch",

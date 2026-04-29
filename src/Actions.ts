@@ -8,7 +8,7 @@ export type StoreActionType = (
 ) => Promise<any>;
 export type StoreActionProvider = [string, StoreActionType];
 
-export function Action(
+export function Actions(
   nativeDispatch: DispatchType,
   actionsConfig: StoreActionProvider[],
   warning = console.warn,
@@ -26,7 +26,7 @@ export function Action(
         }
         if (!isCommandState(nextState)) {
           resolve(nextState);
-          return;
+          return nextState;
         }
         const commands = nextState.commands();
         // Where are no commands or it is not an Array
@@ -37,7 +37,8 @@ export function Action(
         }
         // Nothing to do
         if (commands.length === 0) {
-          return;
+          resolve(nextState.state());
+          return nextState.state();
         }
         const unhandledCommandTypes: string[] = [];
         Promise.all(
@@ -45,7 +46,11 @@ export function Action(
             const handlersForType = handlersGroups[command.type];
             if (handlersForType?.length) {
               for (const handler of handlersForType) {
-                await handler.action(command, nativeDispatch);
+                try {
+                  await handler.action(command, ActionDispatch);
+                } catch (e) {
+                  reject(e);
+                }
               }
             } else {
               unhandledCommandTypes.push(command.type);
@@ -63,6 +68,7 @@ export function Action(
             });
           })
           .catch(reject);
+        return nextState.state();
       });
     });
   };

@@ -25,7 +25,7 @@ declare function BatchCommand(state: unknown, commands: CommandType[]): CommandS
 type DispatchType = (fn: (...args: any[]) => any) => any;
 type StoreActionType = (command: CommandType, dispatch: DispatchType) => Promise<any>;
 type StoreActionProvider = [string, StoreActionType];
-declare function Action(nativeDispatch: DispatchType, actionsConfig: StoreActionProvider[], warning?: (...data: any[]) => void): (fn: (...args: any[]) => any) => Promise<unknown>;
+declare function Actions(nativeDispatch: DispatchType, actionsConfig: StoreActionProvider[], warning?: (...data: any[]) => void): (fn: (...args: any[]) => any) => Promise<unknown>;
 
-export { Action, BatchCommand, Command, CommandState, isCommandState };
+export { Actions, BatchCommand, Command, CommandState, isCommandState };
 export type { CommandFailType, CommandNextType, CommandSetter, CommandType, CommandsType, DispatchType, StateWithCommands, StoreActionProvider, StoreActionType };

@@ -25,7 +25,7 @@ function BatchCommand(state, commands) {
   return new CommandState(state, commands);
 }
 
-function Action(nativeDispatch, actionsConfig, warning = console.warn) {
+function Actions(nativeDispatch, actionsConfig, warning = console.warn) {
   const actions = actionsConfig.map(function ActionHandlerMap([type, action]) {
     return { type, action };
   });
@@ -39,7 +39,7 @@ function Action(nativeDispatch, actionsConfig, warning = console.warn) {
         }
         if (!isCommandState(nextState)) {
           resolve(nextState);
-          return;
+          return nextState;
         }
         const commands = nextState.commands();
         if (commands === void 0 || !Array.isArray(commands)) {
@@ -48,7 +48,8 @@ function Action(nativeDispatch, actionsConfig, warning = console.warn) {
           );
         }
         if (commands.length === 0) {
-          return;
+          resolve(nextState.state());
+          return nextState.state();
         }
         const unhandledCommandTypes = [];
         Promise.all(
@@ -56,7 +57,11 @@ function Action(nativeDispatch, actionsConfig, warning = console.warn) {
             const handlersForType = handlersGroups[command.type];
             if (handlersForType?.length) {
               for (const handler of handlersForType) {
-                await handler.action(command, nativeDispatch);
+                try {
+                  await handler.action(command, ActionDispatch);
+                } catch (e) {
+                  reject(e);
+                }
               }
             } else {
               unhandledCommandTypes.push(command.type);
@@ -72,6 +77,7 @@ function Action(nativeDispatch, actionsConfig, warning = console.warn) {
             return state2;
           });
         }).catch(reject);
+        return nextState.state();
       });
     });
   };
@@ -93,7 +99,7 @@ function groupBy(list, key) {
   );
 }
 
-exports.Action = Action;
+exports.Actions = Actions;
 exports.BatchCommand = BatchCommand;
 exports.Command = Command;
 exports.CommandState = CommandState;
