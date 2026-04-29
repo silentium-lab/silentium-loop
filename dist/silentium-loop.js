@@ -69,7 +69,7 @@ function createCommand(commandPush = defaultCommandPush) {
       return commandPush(state, command);
     },
     BatchCommand(state, commands) {
-      commands.reduce(function BatchReduce(last, command) {
+      return commands.reduce(function BatchReduce(last, command) {
         return commandPush(last, command);
       }, state);
     }

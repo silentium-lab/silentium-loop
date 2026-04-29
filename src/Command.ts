@@ -29,7 +29,7 @@ export function createCommand<T>(
       return commandPush(state, command);
     },
     BatchCommand(state: T, commands: CommandType[]) {
-      commands.reduce(function BatchReduce(last, command) {
+      return commands.reduce(function BatchReduce(last, command) {
         return commandPush(last, command);
       }, state);
     },

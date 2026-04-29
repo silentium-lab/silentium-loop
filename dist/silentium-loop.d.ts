@@ -13,7 +13,7 @@ type StateWithCommands = {
 type CommandSetter<T> = (state: T, command: CommandType) => T;
 declare function createCommand<T>(commandPush?: CommandSetter<T>): {
     Command(state: T, command: CommandType): T;
-    BatchCommand(state: T, commands: CommandType[]): void;
+    BatchCommand(state: T, commands: CommandType[]): T;
 };
 
 type DispatchType = (fn: (...args: any[]) => any) => any;
