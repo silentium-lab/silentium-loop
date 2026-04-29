@@ -1,46 +1,77 @@
-const defaultResetCommands = (state) => {
-  state.commands = [];
-};
-function Action(dispatch, actionsConfig, getCommands, resetCommands = defaultResetCommands, warning = console.warn) {
+class CommandState {
+  constructor(_state, _commands) {
+    this._state = _state;
+    this._commands = _commands;
+  }
+  state() {
+    return this._state;
+  }
+  commands() {
+    if (isCommandState(this._state)) {
+      return this._state.commands().concat(this._commands);
+    }
+    return this._commands;
+  }
+}
+function isCommandState(obj) {
+  return obj instanceof CommandState;
+}
+function Command(state, command) {
+  return new CommandState(state, [command]);
+}
+function BatchCommand(state, commands) {
+  return new CommandState(state, commands);
+}
+
+function Action(nativeDispatch, actionsConfig, warning = console.warn) {
   const actions = actionsConfig.map(function ActionHandlerMap([type, action]) {
     return { type, action };
   });
   const handlersGroups = groupBy(actions, "type");
-  return async function ActionListener() {
-    const commands = getCommands();
-    if (commands === void 0 || !Array.isArray(commands)) {
-      throw new Error(
-        "WARNING! commands are undefined, possibly problem in you logic!"
-      );
-    }
-    if (commands.length === 0) {
-      return;
-    }
-    dispatch(resetCommands);
-    const stateCommands = commands ? [...commands] : [];
-    const unhandledCommandTypes = [];
-    while (stateCommands.length > 0) {
-      let commands2 = stateCommands.shift() ?? [];
-      if (!Array.isArray(commands2)) {
-        commands2 = [commands2];
-      }
-      await Promise.all(
-        commands2.map(async function ActionCommandsMap(command) {
-          const handlersForType = handlersGroups[command.type];
-          if (handlersForType?.length) {
-            for (const handler of handlersForType) {
-              await handler.action(command, dispatch);
+  return function ActionDispatch(fn) {
+    return new Promise(function ActionDispatchPromise(resolve, reject) {
+      nativeDispatch(function ActionDispatchInNative(state) {
+        const nextState = fn(state);
+        if (nextState === void 0) {
+          throw new Error("Action: dispatch callback can't return nothing ");
+        }
+        if (!isCommandState(nextState)) {
+          resolve(nextState);
+          return;
+        }
+        const commands = nextState.commands();
+        if (commands === void 0 || !Array.isArray(commands)) {
+          throw new Error(
+            "WARNING! commands are undefined, possibly problem in app logic!"
+          );
+        }
+        if (commands.length === 0) {
+          return;
+        }
+        const unhandledCommandTypes = [];
+        Promise.all(
+          commands.map(async function ActionCommandsMap(command) {
+            const handlersForType = handlersGroups[command.type];
+            if (handlersForType?.length) {
+              for (const handler of handlersForType) {
+                await handler.action(command, nativeDispatch);
+              }
+            } else {
+              unhandledCommandTypes.push(command.type);
             }
-          } else {
-            unhandledCommandTypes.push(command.type);
+          })
+        ).then(function ActionDispatchAllCommandsThen() {
+          if (unhandledCommandTypes.length) {
+            const unhandledTypes = [...new Set(unhandledCommandTypes)];
+            warning("Unhandled commands in store!", unhandledTypes);
           }
-        })
-      );
-    }
-    if (unhandledCommandTypes.length) {
-      const unhandledTypes = [...new Set(unhandledCommandTypes)];
-      warning("Unhandled commands in store!", unhandledTypes);
-    }
+          nativeDispatch(function ActionDispatchFinish(state2) {
+            resolve(state2);
+            return state2;
+          });
+        }).catch(reject);
+      });
+    });
   };
 }
 function groupBy(list, key) {
@@ -60,22 +91,5 @@ function groupBy(list, key) {
   );
 }
 
-const defaultCommandPush = (state, command) => {
-  state.commands.push(command);
-};
-function createCommand(commandPush = defaultCommandPush) {
-  const buildedCommands = {
-    Command(state, command) {
-      return commandPush(state, command);
-    },
-    BatchCommand(state, commands) {
-      return commands.reduce(function BatchReduce(last, command) {
-        return commandPush(last, command);
-      }, state);
-    }
-  };
-  return buildedCommands;
-}
-
-export { Action, createCommand };
+export { Action, BatchCommand, Command, CommandState, isCommandState };
 //# sourceMappingURL=silentium-loop.mjs.map

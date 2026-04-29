@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, TestContext, vi } from "vitest";
-import { Action, createCommand } from "../src";
+import { Action, Command } from "../src";
 
 declare module "vitest" {
   export interface TestContext {
@@ -7,60 +7,39 @@ declare module "vitest" {
   }
 }
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 describe("Use Cases", () => {
   beforeEach((context: TestContext) => {
     context.store = {
       state: {
         a: 1,
         b: 2,
-        commands: [],
       },
       dispatch(fn: any) {
-        fn(context.store.state);
-        context.store.listeners.forEach((l: () => void) => {
-          l();
-        });
+        context.store.state = fn(context.store.state);
       },
-      listeners: [],
     };
   });
 
   test("main", async ({ store }) => {
     const startAction = vi.fn();
-    const actionsListener = Action(
-      store.dispatch,
-      [["start", startAction]],
-      () => store.state.commands,
-    );
-    store.listeners.push(actionsListener);
-    const { Command } = createCommand();
-    store.dispatch((state: any) => {
-      Command(state, {
+    const dispatch = Action(store.dispatch, [["start", startAction]]);
+    await dispatch((state: any) => {
+      return Command(state, {
         type: "start",
       });
     });
-    await sleep(10);
     expect(startAction).toBeCalled();
   });
 
-  test("arguments translation", async ({ store }) => {
+  test("arguments transfer", async ({ store }) => {
     const fetchAction = vi.fn();
-    const actionsListener = Action(
-      store.dispatch,
-      [["fetch", fetchAction]],
-      () => store.state.commands,
-    );
-    store.listeners.push(actionsListener);
-    const { Command } = createCommand();
-    store.dispatch((state: any) => {
-      Command(state, {
+    const dispatch = Action(store.dispatch, [["fetch", fetchAction]]);
+    await dispatch((state: any) => {
+      return Command(state, {
         type: "fetch",
         args: ["/api/test"],
       });
     });
-    await sleep(10);
     expect(fetchAction).toBeCalled();
     expect(fetchAction).toBeCalledWith(
       {
@@ -69,5 +48,26 @@ describe("Use Cases", () => {
       },
       expect.anything(),
     );
+  });
+
+  test("computing", async ({ store }) => {
+    const dispatch = Action(store.dispatch, []);
+    const state: any = await dispatch((state: any) => {
+      state.c = state.a + state.b;
+      return state;
+    });
+    expect(state.c).toBe(3);
+  });
+
+  test("unhandled types", async ({ store }) => {
+    const warn = vi.fn();
+    const dispatch = Action(store.dispatch, [], warn);
+    await dispatch((state: any) => {
+      return Command(state, {
+        type: "fetch",
+        args: ["/api/test"],
+      });
+    });
+    expect(warn).toBeCalledWith("Unhandled commands in store!", ["fetch"]);
   });
 });

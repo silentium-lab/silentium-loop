@@ -11,15 +11,21 @@ type StateWithCommands = {
     commands: CommandsType;
 };
 type CommandSetter<T> = (state: T, command: CommandType) => T;
-declare function createCommand<T>(commandPush?: CommandSetter<T>): {
-    Command(state: T, command: CommandType): T;
-    BatchCommand(state: T, commands: CommandType[]): T;
-};
+declare class CommandState<T> {
+    private _state;
+    private _commands;
+    constructor(_state: T | CommandState<T>, _commands: CommandType[]);
+    state(): CommandState<T> | T;
+    commands(): CommandType[];
+}
+declare function isCommandState(obj: unknown): obj is CommandState<any>;
+declare function Command(state: unknown, command: CommandType): CommandState<unknown>;
+declare function BatchCommand(state: unknown, commands: CommandType[]): CommandState<unknown>;
 
 type DispatchType = (fn: (...args: any[]) => any) => any;
 type StoreActionType = (command: CommandType, dispatch: DispatchType) => Promise<any>;
 type StoreActionProvider = [string, StoreActionType];
-declare function Action(dispatch: DispatchType, actionsConfig: StoreActionProvider[], getCommands: () => CommandType[], resetCommands?: (state: any) => unknown, warning?: (...data: any[]) => void): () => Promise<void>;
+declare function Action(nativeDispatch: DispatchType, actionsConfig: StoreActionProvider[], warning?: (...data: any[]) => void): (fn: (...args: any[]) => any) => Promise<unknown>;
 
-export { Action, createCommand };
+export { Action, BatchCommand, Command, CommandState, isCommandState };
 export type { CommandFailType, CommandNextType, CommandSetter, CommandType, CommandsType, DispatchType, StateWithCommands, StoreActionProvider, StoreActionType };

@@ -1,4 +1,4 @@
-import { CommandType } from "./Command";
+import { CommandType, isCommandState } from "./Command";
 
 export type DispatchType = (fn: (...args: any[]) => any) => any;
 
@@ -8,58 +8,63 @@ export type StoreActionType = (
 ) => Promise<any>;
 export type StoreActionProvider = [string, StoreActionType];
 
-const defaultResetCommands = (state: any) => {
-  state.commands = [];
-};
-
 export function Action(
-  dispatch: DispatchType,
+  nativeDispatch: DispatchType,
   actionsConfig: StoreActionProvider[],
-  getCommands: () => CommandType[],
-  resetCommands: (state: any) => unknown = defaultResetCommands,
   warning = console.warn,
 ) {
   const actions = actionsConfig.map(function ActionHandlerMap([type, action]) {
     return { type, action };
   });
   const handlersGroups = groupBy(actions, "type");
-  return async function ActionListener() {
-    const commands = getCommands();
-    // Where are no commands or it is not an Array
-    if (commands === undefined || !Array.isArray(commands)) {
-      throw new Error(
-        "WARNING! commands are undefined, possibly problem in you logic!",
-      );
-    }
-    // Nothing to do
-    if (commands.length === 0) {
-      return;
-    }
-    dispatch(resetCommands);
-    const stateCommands = commands ? [...commands] : [];
-    const unhandledCommandTypes: string[] = [];
-    while (stateCommands.length > 0) {
-      let commands = (stateCommands.shift() ?? []) as CommandType[];
-      if (!Array.isArray(commands)) {
-        commands = [commands];
-      }
-      await Promise.all(
-        commands.map(async function ActionCommandsMap(command) {
-          const handlersForType = handlersGroups[command.type];
-          if (handlersForType?.length) {
-            for (const handler of handlersForType) {
-              await handler.action(command, dispatch);
+  return function ActionDispatch(fn: (...args: any[]) => any) {
+    return new Promise(function ActionDispatchPromise(resolve, reject) {
+      nativeDispatch(function ActionDispatchInNative(state) {
+        const nextState = fn(state);
+        if (nextState === undefined) {
+          throw new Error("Action: dispatch callback can't return nothing ");
+        }
+        if (!isCommandState(nextState)) {
+          resolve(nextState);
+          return;
+        }
+        const commands = nextState.commands();
+        // Where are no commands or it is not an Array
+        if (commands === undefined || !Array.isArray(commands)) {
+          throw new Error(
+            "WARNING! commands are undefined, possibly problem in app logic!",
+          );
+        }
+        // Nothing to do
+        if (commands.length === 0) {
+          return;
+        }
+        const unhandledCommandTypes: string[] = [];
+        Promise.all(
+          commands.map(async function ActionCommandsMap(command) {
+            const handlersForType = handlersGroups[command.type];
+            if (handlersForType?.length) {
+              for (const handler of handlersForType) {
+                await handler.action(command, nativeDispatch);
+              }
+            } else {
+              unhandledCommandTypes.push(command.type);
             }
-          } else {
-            unhandledCommandTypes.push(command.type);
-          }
-        }),
-      );
-    }
-    if (unhandledCommandTypes.length) {
-      const unhandledTypes = [...new Set(unhandledCommandTypes)];
-      warning("Unhandled commands in store!", unhandledTypes);
-    }
+          }),
+        )
+          .then(function ActionDispatchAllCommandsThen() {
+            if (unhandledCommandTypes.length) {
+              const unhandledTypes = [...new Set(unhandledCommandTypes)];
+              warning("Unhandled commands in store!", unhandledTypes);
+            }
+            nativeDispatch(function ActionDispatchFinish(state) {
+              resolve(state);
+              return state;
+            });
+          })
+          .catch(reject);
+      });
+    });
   };
 }
 
