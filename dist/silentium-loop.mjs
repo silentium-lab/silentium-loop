@@ -24,11 +24,14 @@ function BatchCommand(state, commands) {
 }
 
 function Actions(nativeDispatch, actionsConfig, warning = console.warn) {
-  const actions = actionsConfig.map(function ActionHandlerMap([type, action]) {
-    return { type, action };
-  });
-  const handlersGroups = groupBy(actions, "type");
   return function ActionDispatch(fn) {
+    const actions = actionsConfig.map(function ActionHandlerMap([
+      type,
+      action
+    ]) {
+      return { type, action };
+    });
+    const handlersGroups = groupBy(actions, "type");
     return new Promise(function ActionDispatchPromise(resolve, reject) {
       nativeDispatch(function ActionDispatchInNative(state) {
         const nextState = fn(state);
