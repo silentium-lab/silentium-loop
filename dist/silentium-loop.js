@@ -24,7 +24,7 @@ function BatchCommand(state, commands) {
 }
 
 function Actions(nativeDispatch, actionsConfig, warning = console.warn) {
-  return function ActionDispatch(fn) {
+  return function ActionDispatch(fn, ...args) {
     const actions = actionsConfig.map(function ActionHandlerMap([
       type,
       action
@@ -34,7 +34,7 @@ function Actions(nativeDispatch, actionsConfig, warning = console.warn) {
     const handlersGroups = groupBy(actions, "type");
     return new Promise(function ActionDispatchPromise(resolve, reject) {
       nativeDispatch(function ActionDispatchInNative(state) {
-        const nextState = fn(state);
+        const nextState = fn(state, ...args);
         if (nextState === void 0) {
           throw new Error("Action: dispatch callback can't return nothing ");
         }

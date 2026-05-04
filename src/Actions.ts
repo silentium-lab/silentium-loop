@@ -13,7 +13,7 @@ export function Actions(
   actionsConfig: StoreActionProvider[],
   warning = console.warn,
 ) {
-  return function ActionDispatch(fn: (...args: any[]) => any) {
+  return function ActionDispatch(fn: (...args: any[]) => any, ...args: any[]) {
     const actions = actionsConfig.map(function ActionHandlerMap([
       type,
       action,
@@ -23,7 +23,7 @@ export function Actions(
     const handlersGroups = groupBy(actions, "type");
     return new Promise(function ActionDispatchPromise(resolve, reject) {
       nativeDispatch(function ActionDispatchInNative(state) {
-        const nextState = fn(state);
+        const nextState = fn(state, ...args);
         if (nextState === undefined) {
           throw new Error("Action: dispatch callback can't return nothing ");
         }
