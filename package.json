@@ -1,6 +1,6 @@
 {
   "name": "silentium-loop",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Silentium commands and messages",
   "license": "MIT",
   "type": "module",

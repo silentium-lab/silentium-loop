@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/silentium-lab/silentium-loop/compare/v0.0.6...v0.0.7) (2026-05-04)
+
+
+### Bug Fixes
+
+* **master:** transfer args from dispatch to clean fn ([9582a5b](https://github.com/silentium-lab/silentium-loop/commit/9582a5b18bed70acb88e52bb1a97a24c2a81fc11))
+
 ### [0.0.6](https://github.com/silentium-lab/silentium-loop/compare/v0.0.5...v0.0.6) (2026-04-30)
 
 
