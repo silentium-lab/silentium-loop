@@ -22,7 +22,7 @@ declare function isCommandState(obj: unknown): obj is CommandState<any>;
 declare function Command(state: unknown, command: CommandType): CommandState<unknown>;
 declare function BatchCommand(state: unknown, commands: CommandType[]): CommandState<unknown>;
 
-type DispatchType = (fn: (...args: any[]) => any) => any;
+type DispatchType = (fn: (...args: any[]) => any, ...args: any[]) => any;
 type StoreActionType = (command: CommandType, dispatch: DispatchType) => Promise<any>;
 type StoreActionProvider = [string, StoreActionType];
 declare function Actions(nativeDispatch: DispatchType, actionsConfig: StoreActionProvider[], warning?: (...data: any[]) => void): (fn: (...args: any[]) => any, ...args: any[]) => Promise<unknown>;

@@ -1,6 +1,6 @@
 import { CommandType, isCommandState } from "./Command";
 
-export type DispatchType = (fn: (...args: any[]) => any) => any;
+export type DispatchType = (fn: (...args: any[]) => any, ...args: any[]) => any;
 
 export type StoreActionType = (
   command: CommandType,
