@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/silentium-lab/silentium-loop/compare/v0.0.7...v0.0.8) (2026-05-06)
+
+
+### Bug Fixes
+
+* **master:** dispatch type parameters ([d690d72](https://github.com/silentium-lab/silentium-loop/commit/d690d72f8aa960a6d1ff6b7a1d29264a4fa91a54))
+
 ### [0.0.7](https://github.com/silentium-lab/silentium-loop/compare/v0.0.6...v0.0.7) (2026-05-04)
 
 
