@@ -50,9 +50,16 @@ export function Actions(
             if (handlersForType?.length) {
               for (const handler of handlersForType) {
                 try {
-                  await handler.action(command, ActionDispatch);
+                  const value = await handler.action(command, ActionDispatch);
+                  if (command.next) {
+                    await ActionDispatch(command.next, value);
+                  }
                 } catch (e) {
-                  reject(e);
+                  if (command.fail) {
+                    await ActionDispatch(command.fail, e);
+                  } else {
+                    reject(e);
+                  }
                 }
               }
             } else {

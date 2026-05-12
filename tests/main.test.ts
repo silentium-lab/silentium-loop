@@ -70,4 +70,36 @@ describe("Use Cases", () => {
     });
     expect(warn).toBeCalledWith("Unhandled commands in store!", ["fetch"]);
   });
+
+  test("next handler", async ({ store }) => {
+    const fetchAction = vi.fn();
+    fetchAction.mockReturnValue({
+      wrapped: 111,
+    });
+    const dispatch = Actions(store.dispatch, [["fetch", fetchAction]]);
+    const result = await dispatch((state: any) => {
+      return Command(state, {
+        type: "fetch",
+        args: ["/api/test"],
+        next: (_, v) => v.wrapped,
+      });
+    });
+    expect(result).toBe(111);
+  });
+
+  test("fail handler", async ({ store }) => {
+    const fetchAction = vi.fn();
+    fetchAction.mockImplementation(() => {
+      throw new Error("mocked error");
+    });
+    const dispatch = Actions(store.dispatch, [["fetch", fetchAction]]);
+    const result = await dispatch((state: any) => {
+      return Command(state, {
+        type: "fetch",
+        args: ["/api/test"],
+        fail: (_, e) => e.message,
+      });
+    });
+    expect(result).toBe("mocked error");
+  });
 });
