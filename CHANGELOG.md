@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/silentium-lab/silentium-loop/compare/v0.0.8...v0.0.9) (2026-05-13)
+
+
+### Features
+
+* actions next and fail ([af66089](https://github.com/silentium-lab/silentium-loop/commit/af66089a845a3289a59ec74c4b1987bf4dd9b755))
+
+
+### Bug Fixes
+
+* **master:** handle next and fail inside dispatch ([93fbe28](https://github.com/silentium-lab/silentium-loop/commit/93fbe283d1ba79caf05fe141cd7ac44832665fba))
+
 ### [0.0.8](https://github.com/silentium-lab/silentium-loop/compare/v0.0.7...v0.0.8) (2026-05-06)
 
 
