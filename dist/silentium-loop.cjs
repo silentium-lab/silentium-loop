@@ -55,15 +55,26 @@ function Actions(nativeDispatch, actionsConfig, warning = console.warn) {
           return nextState.state();
         }
         const unhandledCommandTypes = [];
+        let promiseState = nextState.state();
         Promise.all(
           commands.map(async function ActionCommandsMap(command) {
             const handlersForType = handlersGroups[command.type];
             if (handlersForType?.length) {
               for (const handler of handlersForType) {
                 try {
-                  await handler.action(command, ActionDispatch);
+                  promiseState = await handler.action(command, ActionDispatch);
+                  if (command.next) {
+                    promiseState = await ActionDispatch(
+                      command.next,
+                      promiseState
+                    );
+                  }
                 } catch (e) {
-                  reject(e);
+                  if (command.fail) {
+                    promiseState = await ActionDispatch(command.fail, e);
+                  } else {
+                    reject(e);
+                  }
                 }
               }
             } else {
@@ -75,10 +86,7 @@ function Actions(nativeDispatch, actionsConfig, warning = console.warn) {
             const unhandledTypes = [...new Set(unhandledCommandTypes)];
             warning("Unhandled commands in store!", unhandledTypes);
           }
-          nativeDispatch(function ActionDispatchFinish(state2) {
-            resolve(state2);
-            return state2;
-          });
+          resolve(promiseState);
         }).catch(reject);
         return nextState.state();
       });

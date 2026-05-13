@@ -44,19 +44,23 @@ export function Actions(
           return nextState.state();
         }
         const unhandledCommandTypes: string[] = [];
+        let promiseState = nextState.state();
         Promise.all(
           commands.map(async function ActionCommandsMap(command) {
             const handlersForType = handlersGroups[command.type];
             if (handlersForType?.length) {
               for (const handler of handlersForType) {
                 try {
-                  const value = await handler.action(command, ActionDispatch);
+                  promiseState = await handler.action(command, ActionDispatch);
                   if (command.next) {
-                    await ActionDispatch(command.next, value);
+                    promiseState = await ActionDispatch(
+                      command.next,
+                      promiseState,
+                    );
                   }
                 } catch (e) {
                   if (command.fail) {
-                    await ActionDispatch(command.fail, e);
+                    promiseState = await ActionDispatch(command.fail, e);
                   } else {
                     reject(e);
                   }
@@ -72,10 +76,7 @@ export function Actions(
               const unhandledTypes = [...new Set(unhandledCommandTypes)];
               warning("Unhandled commands in store!", unhandledTypes);
             }
-            nativeDispatch(function ActionDispatchFinish(state) {
-              resolve(state);
-              return state;
-            });
+            resolve(promiseState);
           })
           .catch(reject);
         return nextState.state();
